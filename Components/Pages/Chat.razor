@@ -1,0 +1,98 @@
+@page "/chat"
+@rendermode InteractiveServer
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@inject IHttpClientFactory HttpClientFactory
+@inject HttpClient Client
+
+<PageTitle>AceLlama Chat</PageTitle>
+
+@code {
+    private string userInput = "";
+    private string responseText = "";
+
+    private List<string> messages = new();
+    private HttpClient _httpClient;
+    
+    public class GenerateRequest
+    {
+        public required string Model { get; set; }
+        public required string Prompt { get; set; }
+        public required bool Stream { get; set; }
+    }
+
+    public class GenerateResponse
+    {
+        [JsonPropertyName("response")]
+        public required string Response { get; set; }
+    }
+
+    private async Task SendMessage()
+    {
+        if (!string.IsNullOrWhiteSpace(userInput))
+        {
+            var request = new GenerateRequest
+            {
+                Model = "llama3.2",
+                Prompt = userInput,
+                Stream = true
+            };
+            Console.WriteLine($"message {userInput}");
+            messages.Add(userInput);
+            userInput = ""; 
+            _httpClient = HttpClientFactory.CreateClient("Ollama");
+            var response = await _httpClient.PostAsJsonAsync("api/generate", request);
+            response.EnsureSuccessStatusCode();
+            
+            <!-- var content = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Raw Response is {content}");
+
+            var generateResponse = JsonSerializer.Deserialize<GenerateResponse>(content);
+
+            Console.WriteLine($"Response is {generateResponse.Response}");
+            
+            messages.Add(generateResponse.Response); -->
+
+            using var stream = await response.Content.ReadAsStreamAsync();
+            using var reader = new StreamReader(stream);
+            messages.Add("");
+            while (!reader.EndOfStream)
+            {
+                var line = await reader.ReadLineAsync();
+                if (!string.IsNullOrEmpty(line))
+                {
+                    var generateResponse = JsonSerializer.Deserialize<GenerateResponse>(line);
+                    messages[^1] = $"{messages[^1]} {generateResponse.Response}";
+                    Console.WriteLine(messages[^1]);
+                    StateHasChanged();
+                }
+            }
+        }
+    }
+}
+
+<div class="chat-container">
+    <ul class="messages">
+        @foreach (var message in messages)
+        {
+            <li class="chat-message">@message</li>
+        }
+    </ul>
+</div>
+
+<div class="input-container">
+    <div class="chat-input">
+        <textarea type="te" @bind="userInput" @bind:event="oninput" @onkeydown="HandleKeyDown" placeholder="Type a message..." />
+        <button @onclick="SendMessage">Send</button>
+    </div>
+</div>
+
+@code {
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SendMessage();
+        }
+    }
+}

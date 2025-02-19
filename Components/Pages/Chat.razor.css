@@ -1,0 +1,66 @@
+.chat-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 5px;
+    width: 60%;
+}
+
+.chat-input textarea {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.chat-input button {
+    padding: 8px 12px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.chat-input button:hover {
+    background-color: #0056b3;
+}
+
+.input-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    bottom: 10%;
+    width: -webkit-fill-available;
+}
+
+ul.messages {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+ul.messages li {
+    padding: 10px 0;
+    margin: 5px 0;
+    position: relative; 
+}
+
+ul.messages li:nth-child(even) {
+    color: #0056b3;
+    padding: 10px 0 10px 70px;
+    margin: 5px 0;
+}
+
+ul.messages li:nth-child(even)::before {
+    content: ""; /* Required for the pseudo-element */
+    display: inline-block;
+    width: 50px; /* Avatar width */
+    height: 50px; /* Avatar height */
+    background-image: url('llama-avatar.png'); /* Path to your avatar image */
+    background-size: cover; /* Ensure the image fits */
+    position: absolute;
+    left: 10px; /* Adjust the position of the avatar */
+    top: 50%; /* Center vertically */
+    transform: translateY(-50%); /* Center vertically */
+}

@@ -1,0 +1,6 @@
+{
+  "image": "bitnami/dotnet-sdk:latest",
+  "runArgs": [
+    "--net=host",
+],
+}
